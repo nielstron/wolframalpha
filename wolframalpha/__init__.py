@@ -54,6 +54,43 @@ class Client(object):
         assert resp.headers.get_content_type() == 'text/xml'
         assert resp.headers.get_param('charset') == 'utf-8'
         return Result(resp)
+    
+    def spoken(self, input, params=(), **kwargs):
+        """
+        Query Wolfram|Alpha using the v2.0 API
+
+        Allows for arbitrary parameters to be passed in
+        the query. For example, to pass assumptions:
+
+            client.spoken(input='pi', assumption='*C.pi-_*NamedConstant-')
+
+        To pass multiple assumptions, pass multiple items
+        as params:
+
+            params = (
+                ('assumption', '*C.pi-_*NamedConstant-'),
+                ('assumption', 'DateOrder_**Day.Month.Year--'),
+            )
+            client.query(input='pi', params=params)
+            
+        For more details on Assumptions, see
+        https://products.wolframalpha.com/api/documentation.html#6
+            
+        For spoken there are special parameters that can be given like timeout and units (metric/imperial)
+        For more about that see https://products.wolframalpha.com/spoken-results-api/documentation/
+        """
+        data = dict(
+            input=input,
+            appid=self.app_id,
+        )
+        data = itertools.chain(params, data.items(), kwargs.items())
+
+        query = urllib.parse.urlencode(tuple(data))
+        url = 'https://api.wolframalpha.com/v2/spoken?' + query
+        resp = urllib.request.urlopen(url)
+        assert resp.headers.get_content_type() == 'text/xml'
+        assert resp.headers.get_param('charset') == 'utf-8'
+        return Result(resp)
 
 
 class ErrorHandler(object):
